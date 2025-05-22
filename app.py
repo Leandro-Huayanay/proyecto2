@@ -1,38 +1,36 @@
 import streamlit as st
-import random
 
-# Título de la app
-st.title("Ecuaciones de primer grado: ¡Resuélvelas!")
+def contar_letra(parrafo, letra):
+    parrafo = parrafo.lower()
+    letra = letra.lower()
+    return parrafo.count(letra)
 
-# Función para generar una ecuación de primer grado aleatoria: ax + b = c
-def generar_ecuacion():
-    a = random.randint(1, 10)
-    b = random.randint(-10, 10)
-    x = random.randint(-10, 10)
-    c = a * x + b
-    return a, b, c, x
+def contar_todas_las_letras(parrafo):
+    parrafo = parrafo.lower()
+    conteo = {}
+    for caracter in parrafo:
+        if caracter.isalpha():
+            conteo[caracter] = conteo.get(caracter, 0) + 1
+    return conteo
 
-# Estado de sesión para mantener la ecuación
-if "a" not in st.session_state:
-    st.session_state.a, st.session_state.b, st.session_state.c, st.session_state.respuesta_correcta = generar_ecuacion()
+# Interfaz de usuario
+st.title("Contador de letras en un párrafo")
 
-# Mostrar ecuación
-a = st.session_state.a
-b = st.session_state.b
-c = st.session_state.c
-st.latex(f"{a}x {'+' if b >= 0 else '-'} {abs(b)} = {c}")
+parrafo = st.text_area("Introduce un párrafo:", height=200)
 
-# Entrada de usuario
-respuesta_usuario = st.number_input("Introduce el valor de x:", step=1.0)
+opcion = st.radio("¿Qué deseas hacer?", ["Contar una letra específica", "Contar todas las letras"])
 
-# Botón para verificar
-if st.button("Verificar respuesta"):
-    if respuesta_usuario == st.session_state.respuesta_correcta:
-        st.success("✅ ¡Correcto!")
-    else:
-        st.error(f"❌ Incorrecto. La respuesta correcta era x = {st.session_state.respuesta_correcta}")
-
-# Botón para generar nueva ecuación
-if st.button("Generar nueva ecuación"):
-    st.session_state.a, st.session_state.b, st.session_state.c, st.session_state.respuesta_correcta = generar_ecuacion()
-    st.experimental_rerun()
+if opcion == "Contar una letra específica":
+    letra = st.text_input("Introduce la letra que deseas contar:", max_chars=1)
+    if letra:
+        if len(letra) != 1 or not letra.isalpha():
+            st.error("Por favor, introduce solo una letra válida.")
+        else:
+            cantidad = contar_letra(parrafo, letra)
+            st.success(f"La letra '{letra}' aparece {cantidad} veces en el párrafo.")
+elif opcion == "Contar todas las letras":
+    if st.button("Contar letras"):
+        conteo = contar_todas_las_letras(parrafo)
+        st.subheader("Conteo de todas las letras:")
+        for letra in sorted(conteo.keys()):
+            st.write(f"{letra}: {conteo[letra]}")
